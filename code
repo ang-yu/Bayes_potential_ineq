@@ -190,8 +190,22 @@ Y_1G_dist <- lapply(1:Q, function(x) {
   inter <- quantile(Over_MC[[x]][[1]], probs=c(0.025, 0.975))
   return(c(ave, inter))
 })
+Y_1G_dist <- t(as.data.frame(Y_1G_dist))
+colnames(Y_1G_dist) <- c("ave","lower","upper")
+Y_1G_dist <- as.data.frame(Y_1G_dist)
+Y_1G_dist$G_values <- G_values
 
-Y_1G_dist[[1]]
+nonpa_plot <- ggplot(Y_1G_dist, aes(x=G_values, y=ave)) +
+  geom_point(size=1.5) +
+  geom_smooth(se = FALSE, aes(color='Y_1|G')) +
+  geom_smooth(data=data, aes(x=parental_income_log, y=adult_income_log, color='Y|G'), se = FALSE) +
+  geom_smooth(data=data[data$college==1,], aes(x=parental_income_log, y=adult_income_log, color='Y|D=1,G'), se = FALSE) +
+  scale_color_manual(breaks=c('Y_1|G', 'Y|G', 'Y|D=1,G'),
+                     values=c('Y_1|G'='red', 'Y|G'='blue', 'Y|D=1,G'='green4')) +
+  geom_errorbar(width=.01, alpha=0.3, aes(ymin=lower, ymax=upper)) +
+  xlab("G values")+
+  xlim(min(G_values), max(G_values)) +
+  theme(axis.title.y = element_blank(), axis.text.x = element_text(size=10)) 
 
 ### Parametric summaries
 ## linear parametrization
@@ -202,10 +216,21 @@ linear <- t(as.data.frame(lapply(1:M, function(x) {
 ggdata <- as.data.frame(cbind(G_values, seq(min(sapply(Y_1G, min)), max(sapply(Y_1G, max)), length.out=Q)))
 colnames(ggdata) <- c("x","y")
 
-linear_plot <- ggplot(data=ggdata, aes(x=x,y=y)) +
-  geom_point(alpha=0) +
-  geom_abline(intercept=linear[1:250,1],slope=linear[1:250,2], alpha=0.1)  # only plot the first 250 draws to make the graph look better. 
-
+linear_plot <- ggplot() + xlim(min(G_values), max(G_values)) 
+add <- function(y) { geom_function(fun=function(x) 
+{
+  linear[y,1] + linear[y,2]*x
+}, alpha=0.1)
+}
+linear_plot <- linear_plot + 
+  map(751:1000, add) +
+  geom_function(fun=function(x) 
+    coef(lm(adult_income_log~parental_income_log, data))[1]+coef(lm(adult_income_log~parental_income_log, data))[2]*x, 
+    aes(color='Y|G'), size=1.5) +
+  geom_function(fun=function(x) mean(linear[,1])+mean(linear[,2])*x, aes(color='Y_1|G'), size=1.5) +
+  scale_color_manual(breaks=c('Y_1|G', 'Y|G'),
+                     values=c('Y_1|G'='firebrick', 'Y|G'='blue'))
+linear_plot
 
 ## quadratic parametrization
 G_values_sqr <- G_values^2
@@ -213,16 +238,26 @@ quadratic <- t(as.data.frame(lapply(1:M, function(x) {
   coef(lm(Y_1G[[x]] ~ G_values + G_values_sqr))
 }), col.names=1:M, row.names=c("intercept","slope1","slope2")) )
 
-
+post_mean <- function(x) mean(quadratic[,1])+mean(quadratic[,2])*x+mean(quadratic[,3])*x^2
+data$parental_income_log_sqr <- data$parental_income_log^2
+original <- function(x) {
+  coef(lm(adult_income_log~parental_income_log+parental_income_log_sqr, data))[1] +
+    coef(lm(adult_income_log~parental_income_log+parental_income_log_sqr, data))[2]*x +
+    coef(lm(adult_income_log~parental_income_log+parental_income_log_sqr, data))[3]*x^2}
 # Note that when iteratively adding geom_function, I need to use the `map' function from purrr package. 
 # For loops don't work. See https://community.rstudio.com/t/plotting-multiple-function-curves-in-a-single-plot-using-ggplot-in-a-user-defined-function/92061/6
-quar_plot <- ggplot() + xlim(min(sapply(Y_1G, min)), max(sapply(Y_1G, max))) 
+quar_plot <- ggplot() + xlim(min(G_values), max(G_values)) 
 add <- function(y) { geom_function(fun=function(x) 
   {
   coef(lm(Y_1G[[y]] ~ G_values + G_values_sqr))[1] + coef(lm(Y_1G[[y]] ~ G_values + G_values_sqr))[2]*x + coef(lm(Y_1G[[y]] ~ G_values + G_values_sqr))[3]*x^2
   }, alpha=0.1)
 }
-quar_plot <- quar_plot + map(1:250, add)
+quar_plot <- quar_plot + 
+  map(751:1000, add) +
+  geom_function(fun=original, aes(color='Y|G'), size=1.5) +
+  geom_function(fun=post_mean, aes(color='Y_1|G'), size=1.5) +
+  scale_color_manual(breaks=c('Y_1|G', 'Y|G'),
+                     values=c('Y_1|G'='firebrick', 'Y|G'='blue'))
 quar_plot
 
 
