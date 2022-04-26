@@ -100,21 +100,42 @@ data$race3[data$race!="Hispanic" & !is.na(data$race)] <- 0
 
 data$college <- as.numeric(data$college)-1
 
-set.seed(1)
+
+##########
+
+data <- readRDS(paste("/Users/Ang/Desktop/Research/Causal_decomposition/Data/data_imputed.",1,".rds", sep = ""))
 
 
+# recode all binary X to numeric
+data$gender <- as.numeric(data$gender)-1
+data$urban <- as.numeric(data$urban)-1
+data$parental_presence <- as.numeric(data$parental_presence)-1
+data$parental_presence <- as.numeric(data$parental_presence)-1
+data$f_foreign_born <- as.numeric(data$f_foreign_born)-1
+data$m_foreign_born <- as.numeric(data$m_foreign_born)-1
+data$mother_seperate <- as.numeric(data$mother_seperate)-1
+data$college_prep <- as.numeric(data$college_prep)-1
+data$college <- as.numeric(data$college)-1
+data$m_work <- as.numeric(data$m_work)-1
 
-X <- data[, c("parental_income_log",
-              "AFQT","rotter_score","rosenberg_irt_score",   # continous X's
-              "urban","gender","parental_presence","fm_foreign_born",  # binary X's 
-              "age","n_sib","medu","fedu","edu_exp","friend_edu_exp",
-              "sig_other_exp1","sig_other_exp2","sig_other_exp3","sig_other_exp4","foreign_lang",
-              "SMSA1","SMSA2","SMSA3","SMSA4","mother_seperate","college_prep",
-              "school_satis1","school_satis2","school_satis3",
-              "region1","region2","region3","region4","m_work","race1","race2","race3")]
-
-X <- as.matrix(X)
+# keep factor variables as factor in the X matrix, which will be used for outcome modelling
+X <- data[, c("parental_income_log","college",
+              "AFQT","rotter_score","rosenberg_irt_score","medu","fedu",   # continuous X's
+              "urban","gender","parental_presence","f_foreign_born","m_foreign_born","college_prep","mother_seperate","m_work",  # binary X's 
+              "age","n_sib","edu_exp","friend_edu_exp", "sig_other_expec","SMSA","school_satisfaction","region","race")]  # factor X's
 colnames(X)
+
+# make factor variables numeric, for modelling f(X|G)
+data$age <- as.numeric(data$age)
+data$n_sib <- as.numeric(data$n_sib)
+data$edu_exp <- as.numeric(data$edu_exp)
+data$friend_edu_exp <- as.numeric(data$friend_edu_exp)
+data$m_foreign_born <- as.numeric(data$m_foreign_born)
+data$sig_other_expec <- as.numeric(data$sig_other_expec)
+data$SMSA <- as.numeric(data$SMSA)
+data$school_satisfaction <- as.numeric(data$school_satisfaction)
+data$region <- as.numeric(data$region)
+data$race <- as.numeric(data$race)
 
 # Number of MC repetitions
 K <- 1000
@@ -127,39 +148,105 @@ Q <- 200
 hist(data$parental_income_log)
 G_values <- seq(quantile(data$parental_income_log, c(0.05, 0.95))[1], quantile(data$parental_income_log, c(0.05, 0.95))[2], length.out=Q)
 
+set.seed(1)
+
 ### X given G
 # continous X
-Model.XgivenG_1 <- wbart(x.train=as.matrix(X[,colnames(X)%in%"parental_income_log"]), y.train=X[,colnames(X)%in%"AFQT"], ndpost=K)
-Model.XgivenG_2 <- wbart(x.train=as.matrix(X[,colnames(X)%in%"parental_income_log"]), y.train=X[,colnames(X)%in%"rotter_score"], ndpost=K)
-Model.XgivenG_3 <- wbart(x.train=as.matrix(X[,colnames(X)%in%"parental_income_log"]), y.train=X[,colnames(X)%in%"rosenberg_irt_score"], ndpost=K)
+Model.XgivenG_1 <- wbart(x.train=as.matrix(data[,colnames(data)%in%"parental_income_log"]), y.train=data[,colnames(data)%in%"AFQT"], ndpost=K)
+Model.XgivenG_2 <- wbart(x.train=as.matrix(data[,colnames(data)%in%"parental_income_log"]), y.train=data[,colnames(data)%in%"rotter_score"], ndpost=K)
+Model.XgivenG_3 <- wbart(x.train=as.matrix(data[,colnames(data)%in%"parental_income_log"]), y.train=data[,colnames(data)%in%"rosenberg_irt_score"], ndpost=K)
+Model.XgivenG_4 <- wbart(x.train=as.matrix(data[,colnames(data)%in%"parental_income_log"]), y.train=data[,colnames(data)%in%"medu"], ndpost=K)
+Model.XgivenG_5 <- wbart(x.train=as.matrix(data[,colnames(data)%in%"parental_income_log"]), y.train=data[,colnames(data)%in%"fedu"], ndpost=K)
 
 # binary X
-Model.XgivenG_4 <- pbart(x.train=as.matrix(X[,colnames(X)%in%"parental_income_log"]), y.train=X[,colnames(X)%in%"urban"], ndpost=K)
-Model.XgivenG_5 <- pbart(x.train=as.matrix(X[,colnames(X)%in%"parental_income_log"]), y.train=X[,colnames(X)%in%"gender"], ndpost=K)
-Model.XgivenG_6 <- pbart(x.train=as.matrix(X[,colnames(X)%in%"parental_income_log"]), y.train=X[,colnames(X)%in%"parental_presence"], ndpost=K)
-Model.XgivenG_7 <- pbart(x.train=as.matrix(X[,colnames(X)%in%"parental_income_log"]), y.train=X[,colnames(X)%in%"fm_foreign_born"], ndpost=K)
+Model.XgivenG_6 <- pbart(x.train=as.matrix(data[,colnames(data)%in%"parental_income_log"]), y.train=data[,colnames(data)%in%"urban"], ndpost=K)
+Model.XgivenG_7 <- pbart(x.train=as.matrix(data[,colnames(data)%in%"parental_income_log"]), y.train=data[,colnames(data)%in%"gender"], ndpost=K)
+Model.XgivenG_8 <- pbart(x.train=as.matrix(data[,colnames(data)%in%"parental_income_log"]), y.train=data[,colnames(data)%in%"parental_presence"], ndpost=K)
+Model.XgivenG_9 <- pbart(x.train=as.matrix(data[,colnames(data)%in%"parental_income_log"]), y.train=data[,colnames(data)%in%"f_foreign_born"], ndpost=K)
+Model.XgivenG_10 <- pbart(x.train=as.matrix(data[,colnames(data)%in%"parental_income_log"]), y.train=data[,colnames(data)%in%"m_foreign_born"], ndpost=K)
+Model.XgivenG_11 <- pbart(x.train=as.matrix(data[,colnames(data)%in%"parental_income_log"]), y.train=data[,colnames(data)%in%"college_prep"], ndpost=K)
+Model.XgivenG_12 <- pbart(x.train=as.matrix(data[,colnames(data)%in%"parental_income_log"]), y.train=data[,colnames(data)%in%"mother_seperate"], ndpost=K)
+Model.XgivenG_13 <- pbart(x.train=as.matrix(data[,colnames(data)%in%"parental_income_log"]), y.train=data[,colnames(data)%in%"m_work"], ndpost=K)
 
+# multinomial X
+L <- length(X[,colnames(X)%in%c("parental_income_log")])
+Model.XgivenG_14 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"age"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_15 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"n_sib"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_16 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"edu_exp"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_17 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"friend_edu_exp"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_18 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"sig_other_expec"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_19 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"SMSA"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_20 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"school_satisfaction"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_21 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"region"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_22 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"race"]), ndpost=K, rm.const=FALSE)
 
+# predictions
 Pred.XgivenG_1 <- predict(Model.XgivenG_1, as.matrix(G_values))
 Pred.XgivenG_2 <- predict(Model.XgivenG_2, as.matrix(G_values))
 Pred.XgivenG_3 <- predict(Model.XgivenG_3, as.matrix(G_values))
-Pred.XgivenG_4 <- rbernoulli(n=K*Q, p=predict(Model.XgivenG_4, as.matrix(G_values))$"prob.test")*1  # *1 to turn TRUE/FALSE to 1/0
-Pred.XgivenG_5 <- rbernoulli(n=K*Q, p=predict(Model.XgivenG_5, as.matrix(G_values))$"prob.test")*1 
-Pred.XgivenG_6 <- rbernoulli(n=K*Q, p=predict(Model.XgivenG_6, as.matrix(G_values))$"prob.test")*1 
+Pred.XgivenG_4 <- predict(Model.XgivenG_4, as.matrix(G_values))
+Pred.XgivenG_5 <- predict(Model.XgivenG_5, as.matrix(G_values))
+Pred.XgivenG_6 <- rbernoulli(n=K*Q, p=predict(Model.XgivenG_6, as.matrix(G_values))$"prob.test")*1  # *1 to turn TRUE/FALSE to 1/0
 Pred.XgivenG_7 <- rbernoulli(n=K*Q, p=predict(Model.XgivenG_7, as.matrix(G_values))$"prob.test")*1 
+Pred.XgivenG_8 <- rbernoulli(n=K*Q, p=predict(Model.XgivenG_8, as.matrix(G_values))$"prob.test")*1 
+Pred.XgivenG_9 <- rbernoulli(n=K*Q, p=predict(Model.XgivenG_9, as.matrix(G_values))$"prob.test")*1 
+Pred.XgivenG_10 <- rbernoulli(n=K*Q, p=predict(Model.XgivenG_10, as.matrix(G_values))$"prob.test")*1  
+Pred.XgivenG_11 <- rbernoulli(n=K*Q, p=predict(Model.XgivenG_11, as.matrix(G_values))$"prob.test")*1 
+Pred.XgivenG_12 <- rbernoulli(n=K*Q, p=predict(Model.XgivenG_12, as.matrix(G_values))$"prob.test")*1 
+Pred.XgivenG_13 <- rbernoulli(n=K*Q, p=predict(Model.XgivenG_13, as.matrix(G_values))$"prob.test")*1 
 
+
+probs <- predict(Model.XgivenG_14, cbind(G_values, rep(1,Q)))$"prob.test"
+f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])==1)
+Pred.XgivenG_14 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
+
+probs <- predict(Model.XgivenG_15, cbind(G_values, rep(1,Q)))$"prob.test"
+f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*7+1):(x*7)])==1)
+Pred.XgivenG_15 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
+
+probs <- predict(Model.XgivenG_16, cbind(G_values, rep(1,Q)))$"prob.test"
+f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*3+1):(x*3)])==1)
+Pred.XgivenG_16 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
+
+probs <- predict(Model.XgivenG_17, cbind(G_values, rep(1,Q)))$"prob.test"
+f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*3+1):(x*3)])==1)
+Pred.XgivenG_17 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
+
+probs <- predict(Model.XgivenG_18, cbind(G_values, rep(1,Q)))$"prob.test"
+f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])==1)
+Pred.XgivenG_18 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
+
+probs <- predict(Model.XgivenG_19, cbind(G_values, rep(1,Q)))$"prob.test"
+f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])==1)
+Pred.XgivenG_19 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
+
+probs <- predict(Model.XgivenG_20, cbind(G_values, rep(1,Q)))$"prob.test"
+f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])==1)
+Pred.XgivenG_20 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
+
+probs <- predict(Model.XgivenG_21, cbind(G_values, rep(1,Q)))$"prob.test"
+f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])==1)
+Pred.XgivenG_21 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
+
+probs <- predict(Model.XgivenG_22, cbind(G_values, rep(1,Q)))$"prob.test"
+f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*3+1):(x*3)])==1)
+Pred.XgivenG_22 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
 
 ### Y given X
-Model.YgivenX <- wbart(x.train=X[,1:8], y.train=data[,colnames(data) %in% "adult_income_log"], ndpost=M)
-Pred.YgivenX <- lapply(1:Q, function(x){
-  predict(Model.YgivenX, cbind(G_values[x], Pred.XgivenG_1[,x], Pred.XgivenG_2[,x], Pred.XgivenG_3[,x], 
-                               Pred.XgivenG_4[,x], Pred.XgivenG_5[,x], Pred.XgivenG_6[,x], Pred.XgivenG_7[,x]))
+Model.Y1givenX <- wbart(x.train=X, y.train=data[,colnames(data) %in% "adult_income_log"], ndpost=M)
+Pred.Y1givenX <- lapply(1:Q, function(x){
+  predict(Model.Y1givenX, cbind(G_values[x], rep(1, Q), Pred.XgivenG_1[,x], Pred.XgivenG_2[,x], Pred.XgivenG_3[,x], 
+                               Pred.XgivenG_4[,x], Pred.XgivenG_5[,x], Pred.XgivenG_6[,x], Pred.XgivenG_7[,x],
+                               Pred.XgivenG_8[,x], Pred.XgivenG_9[,x], Pred.XgivenG_10[,x], Pred.XgivenG_11[,x],
+                               Pred.XgivenG_12[,x], Pred.XgivenG_13[,x], Pred.XgivenG_14[,x], Pred.XgivenG_15[,x], 
+                               Pred.XgivenG_16[,x], Pred.XgivenG_17[,x], Pred.XgivenG_18[,x], Pred.XgivenG_19[,x],
+                               Pred.XgivenG_20[,x], Pred.XgivenG_21[,x], Pred.XgivenG_22[,x]))
   })
 
 ### Summarize the results over MC draws 
 Over_MC <- lapply(1:Q, function(x) {
-  mean_MC_x <- rowMeans(Pred.YgivenX[[x]]) # This takes average over MC draws within each BART posterior draw and each G value
-  sd_MC <- rowSums((Pred.YgivenX[[x]] - mean_MC_x)^2/(K*(K-1)))
+  mean_MC_x <- rowMeans(Pred.Y1givenX[[x]]) # This takes average over MC draws within each BART posterior draw and each G value
+  sd_MC <- rowSums((Pred.Y1givenX[[x]] - mean_MC_x)^2/(K*(K-1)))
   return(list(mean_MC_x, sd_MC))
   })
 
@@ -215,6 +302,9 @@ linear <- t(as.data.frame(lapply(1:M, function(x) {
 
 ggdata <- as.data.frame(cbind(G_values, seq(min(sapply(Y_1G, min)), max(sapply(Y_1G, max)), length.out=Q)))
 colnames(ggdata) <- c("x","y")
+colMeans(linear)
+quantile(linear[,1], probs=c(0.025, 0.975))
+quantile(linear[,2], probs=c(0.025, 0.975))
 
 linear_plot <- ggplot() + xlim(min(G_values), max(G_values)) 
 add <- function(y) { geom_function(fun=function(x) 
@@ -237,6 +327,10 @@ G_values_sqr <- G_values^2
 quadratic <- t(as.data.frame(lapply(1:M, function(x) {
   coef(lm(Y_1G[[x]] ~ G_values + G_values_sqr))
 }), col.names=1:M, row.names=c("intercept","slope1","slope2")) )
+colMeans(quadratic)
+quantile(quadratic[,1], probs=c(0.025, 0.975))
+quantile(quadratic[,2], probs=c(0.025, 0.975))
+quantile(quadratic[,3], probs=c(0.025, 0.975))
 
 post_mean <- function(x) mean(quadratic[,1])+mean(quadratic[,2])*x+mean(quadratic[,3])*x^2
 data$parental_income_log_sqr <- data$parental_income_log^2
@@ -260,5 +354,5 @@ quar_plot <- quar_plot +
                      values=c('Y_1|G'='firebrick', 'Y|G'='blue'))
 quar_plot
 
-
+##
 
