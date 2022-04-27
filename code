@@ -26,18 +26,6 @@ X <- data[, c("parental_income_log","college",
 X <- as.matrix(X)
 colnames(X)
 
-# make factor variables numeric, for modelling f(X|G)
-data$age <- as.numeric(data$age)
-data$n_sib <- as.numeric(data$n_sib)
-data$edu_exp <- as.numeric(data$edu_exp)
-data$friend_edu_exp <- as.numeric(data$friend_edu_exp)
-data$m_foreign_born <- as.numeric(data$m_foreign_born)
-data$sig_other_expec <- as.numeric(data$sig_other_expec)
-data$SMSA <- as.numeric(data$SMSA)
-data$school_satisfaction <- as.numeric(data$school_satisfaction)
-data$region <- as.numeric(data$region)
-data$race <- as.numeric(data$race)
-
 # Number of MC repetitions
 K <- 1000
 # Number of posterior BART draws
@@ -70,16 +58,16 @@ Model.XgivenG_12 <- pbart(x.train=as.matrix(data[,colnames(data)%in%"parental_in
 Model.XgivenG_13 <- pbart(x.train=as.matrix(data[,colnames(data)%in%"parental_income_log"]), y.train=data[,colnames(data)%in%"m_work"], ndpost=K)
 
 # multinomial X
-L <- length(X[,colnames(X)%in%c("parental_income_log")])
-Model.XgivenG_14 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"age"]), ndpost=K, rm.const=FALSE)
-Model.XgivenG_15 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"n_sib"]), ndpost=K, rm.const=FALSE)
-Model.XgivenG_16 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"edu_exp"]), ndpost=K, rm.const=FALSE)
-Model.XgivenG_17 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"friend_edu_exp"]), ndpost=K, rm.const=FALSE)
-Model.XgivenG_18 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"sig_other_expec"]), ndpost=K, rm.const=FALSE)
-Model.XgivenG_19 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"SMSA"]), ndpost=K, rm.const=FALSE)
-Model.XgivenG_20 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"school_satisfaction"]), ndpost=K, rm.const=FALSE)
-Model.XgivenG_21 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"region"]), ndpost=K, rm.const=FALSE)
-Model.XgivenG_22 <- mbart(x.train=cbind(X[,colnames(X)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(X[,colnames(X)%in%"race"]), ndpost=K, rm.const=FALSE)
+L <- length(data[,colnames(data)%in%c("parental_income_log")])
+Model.XgivenG_14 <- mbart(x.train=cbind(data[,colnames(data)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(data[,colnames(data)%in%"age"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_15 <- mbart(x.train=cbind(data[,colnames(data)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(data[,colnames(data)%in%"n_sib"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_16 <- mbart(x.train=cbind(data[,colnames(data)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(data[,colnames(data)%in%"edu_exp"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_17 <- mbart(x.train=cbind(data[,colnames(data)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(data[,colnames(data)%in%"friend_edu_exp"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_18 <- mbart(x.train=cbind(data[,colnames(data)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(data[,colnames(data)%in%"sig_other_expec"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_19 <- mbart(x.train=cbind(data[,colnames(data)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(data[,colnames(data)%in%"SMSA"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_20 <- mbart(x.train=cbind(data[,colnames(data)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(data[,colnames(data)%in%"school_satisfaction"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_21 <- mbart(x.train=cbind(data[,colnames(data)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(data[,colnames(data)%in%"region"]), ndpost=K, rm.const=FALSE)
+Model.XgivenG_22 <- mbart(x.train=cbind(data[,colnames(data)%in%c("parental_income_log")], rep(1,L)), y.train=as.integer(data[,colnames(data)%in%"race"]), ndpost=K, rm.const=FALSE)
 
 # predictions
 Pred.XgivenG_1 <- predict(Model.XgivenG_1, as.matrix(G_values))
@@ -134,7 +122,7 @@ f <- function(x,y) rmultinom(n=1, size=1, prob=probs[y,((x-1)*3+1):(x*3)])
 Pred.XgivenG_22 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
 
 ### Y given X
-Model.Y1givenX <- wbart(x.train=X, y.train=data[,colnames(data) %in% "adult_income_log"], ndpost=M)
+Model.Y1givenX <- wbart(x.train=data[,colnames(X)], y.train=data[,colnames(data)%in%"adult_income_log"], ndpost=M)
 Pred.Y1givenX <- lapply(1:Q, function(x){
   predict(Model.Y1givenX, cbind(G_values[x], rep(1, Q), Pred.XgivenG_1[,x], Pred.XgivenG_2[,x], Pred.XgivenG_3[,x], 
                                Pred.XgivenG_4[,x], Pred.XgivenG_5[,x], Pred.XgivenG_6[,x], Pred.XgivenG_7[,x],
