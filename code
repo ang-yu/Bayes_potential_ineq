@@ -11,7 +11,6 @@ data <- readRDS(paste("/Users/Ang/Desktop/Research/Causal_decomposition/Data/dat
 data$gender <- as.numeric(data$gender)-1
 data$urban <- as.numeric(data$urban)-1
 data$parental_presence <- as.numeric(data$parental_presence)-1
-data$parental_presence <- as.numeric(data$parental_presence)-1
 data$f_foreign_born <- as.numeric(data$f_foreign_born)-1
 data$m_foreign_born <- as.numeric(data$m_foreign_born)-1
 data$mother_seperate <- as.numeric(data$mother_seperate)-1
@@ -24,6 +23,7 @@ X <- data[, c("parental_income_log","college",
               "AFQT","rotter_score","rosenberg_irt_score","medu","fedu",   # continuous X's
               "urban","gender","parental_presence","f_foreign_born","m_foreign_born","college_prep","mother_seperate","m_work",  # binary X's 
               "age","n_sib","edu_exp","friend_edu_exp", "sig_other_expec","SMSA","school_satisfaction","region","race")]  # factor X's
+X <- as.matrix(X)
 colnames(X)
 
 # make factor variables numeric, for modelling f(X|G)
@@ -98,39 +98,39 @@ Pred.XgivenG_13 <- rbernoulli(n=K*Q, p=predict(Model.XgivenG_13, as.matrix(G_val
 
 
 probs <- predict(Model.XgivenG_14, cbind(G_values, rep(1,Q)))$"prob.test"
-f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])==1)
+f <- function(x,y) rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])
 Pred.XgivenG_14 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
 
 probs <- predict(Model.XgivenG_15, cbind(G_values, rep(1,Q)))$"prob.test"
-f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*7+1):(x*7)])==1)
+f <- function(x,y) rmultinom(n=1, size=1, prob=probs[y,((x-1)*7+1):(x*7)])
 Pred.XgivenG_15 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
 
 probs <- predict(Model.XgivenG_16, cbind(G_values, rep(1,Q)))$"prob.test"
-f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*3+1):(x*3)])==1)
+f <- function(x,y) rmultinom(n=1, size=1, prob=probs[y,((x-1)*3+1):(x*3)])
 Pred.XgivenG_16 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
 
 probs <- predict(Model.XgivenG_17, cbind(G_values, rep(1,Q)))$"prob.test"
-f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*3+1):(x*3)])==1)
+f <- function(x,y) rmultinom(n=1, size=1, prob=probs[y,((x-1)*3+1):(x*3)])
 Pred.XgivenG_17 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
 
 probs <- predict(Model.XgivenG_18, cbind(G_values, rep(1,Q)))$"prob.test"
-f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])==1)
+f <- function(x,y) rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])
 Pred.XgivenG_18 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
 
 probs <- predict(Model.XgivenG_19, cbind(G_values, rep(1,Q)))$"prob.test"
-f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])==1)
+f <- function(x,y) rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])
 Pred.XgivenG_19 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
 
 probs <- predict(Model.XgivenG_20, cbind(G_values, rep(1,Q)))$"prob.test"
-f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])==1)
+f <- function(x,y) rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])
 Pred.XgivenG_20 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
 
 probs <- predict(Model.XgivenG_21, cbind(G_values, rep(1,Q)))$"prob.test"
-f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])==1)
+f <- function(x,y) rmultinom(n=1, size=1, prob=probs[y,((x-1)*4+1):(x*4)])
 Pred.XgivenG_21 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
 
 probs <- predict(Model.XgivenG_22, cbind(G_values, rep(1,Q)))$"prob.test"
-f <- function(x,y) which(rmultinom(n=1, size=1, prob=probs[y,((x-1)*3+1):(x*3)])==1)
+f <- function(x,y) rmultinom(n=1, size=1, prob=probs[y,((x-1)*3+1):(x*3)])
 Pred.XgivenG_22 <-sapply(1:Q, function(x) sapply(1:K, function(y) f(x,y)))
 
 ### Y given X
@@ -139,9 +139,43 @@ Pred.Y1givenX <- lapply(1:Q, function(x){
   predict(Model.Y1givenX, cbind(G_values[x], rep(1, Q), Pred.XgivenG_1[,x], Pred.XgivenG_2[,x], Pred.XgivenG_3[,x], 
                                Pred.XgivenG_4[,x], Pred.XgivenG_5[,x], Pred.XgivenG_6[,x], Pred.XgivenG_7[,x],
                                Pred.XgivenG_8[,x], Pred.XgivenG_9[,x], Pred.XgivenG_10[,x], Pred.XgivenG_11[,x],
-                               Pred.XgivenG_12[,x], Pred.XgivenG_13[,x], Pred.XgivenG_14[,x], Pred.XgivenG_15[,x], 
-                               Pred.XgivenG_16[,x], Pred.XgivenG_17[,x], Pred.XgivenG_18[,x], Pred.XgivenG_19[,x],
-                               Pred.XgivenG_20[,x], Pred.XgivenG_21[,x], Pred.XgivenG_22[,x]))
+                               Pred.XgivenG_12[,x], Pred.XgivenG_13[,x], 
+                               Pred.XgivenG_14[seq(1,nrow(Pred.XgivenG_14),by=nrow(Pred.XgivenG_14)/K),x],
+                               Pred.XgivenG_14[seq(2,nrow(Pred.XgivenG_14),by=nrow(Pred.XgivenG_14)/K),x],
+                               Pred.XgivenG_14[seq(3,nrow(Pred.XgivenG_14),by=nrow(Pred.XgivenG_14)/K),x],
+                               Pred.XgivenG_14[seq(4,nrow(Pred.XgivenG_14),by=nrow(Pred.XgivenG_14)/K),x],
+                               Pred.XgivenG_15[seq(1,nrow(Pred.XgivenG_15),by=nrow(Pred.XgivenG_15)/K),x],
+                               Pred.XgivenG_15[seq(2,nrow(Pred.XgivenG_15),by=nrow(Pred.XgivenG_15)/K),x],
+                               Pred.XgivenG_15[seq(3,nrow(Pred.XgivenG_15),by=nrow(Pred.XgivenG_15)/K),x],
+                               Pred.XgivenG_15[seq(4,nrow(Pred.XgivenG_15),by=nrow(Pred.XgivenG_15)/K),x],
+                               Pred.XgivenG_15[seq(5,nrow(Pred.XgivenG_15),by=nrow(Pred.XgivenG_15)/K),x],
+                               Pred.XgivenG_15[seq(6,nrow(Pred.XgivenG_15),by=nrow(Pred.XgivenG_15)/K),x],
+                               Pred.XgivenG_15[seq(7,nrow(Pred.XgivenG_15),by=nrow(Pred.XgivenG_15)/K),x],
+                               Pred.XgivenG_16[seq(1,nrow(Pred.XgivenG_16),by=nrow(Pred.XgivenG_16)/K),x],
+                               Pred.XgivenG_16[seq(2,nrow(Pred.XgivenG_16),by=nrow(Pred.XgivenG_16)/K),x],
+                               Pred.XgivenG_16[seq(3,nrow(Pred.XgivenG_16),by=nrow(Pred.XgivenG_16)/K),x],
+                               Pred.XgivenG_17[seq(1,nrow(Pred.XgivenG_17),by=nrow(Pred.XgivenG_17)/K),x],
+                               Pred.XgivenG_17[seq(2,nrow(Pred.XgivenG_17),by=nrow(Pred.XgivenG_17)/K),x],
+                               Pred.XgivenG_17[seq(3,nrow(Pred.XgivenG_17),by=nrow(Pred.XgivenG_17)/K),x],
+                               Pred.XgivenG_18[seq(1,nrow(Pred.XgivenG_18),by=nrow(Pred.XgivenG_18)/K),x],
+                               Pred.XgivenG_18[seq(2,nrow(Pred.XgivenG_18),by=nrow(Pred.XgivenG_18)/K),x],
+                               Pred.XgivenG_18[seq(3,nrow(Pred.XgivenG_18),by=nrow(Pred.XgivenG_18)/K),x],
+                               Pred.XgivenG_18[seq(4,nrow(Pred.XgivenG_18),by=nrow(Pred.XgivenG_18)/K),x],
+                               Pred.XgivenG_19[seq(1,nrow(Pred.XgivenG_19),by=nrow(Pred.XgivenG_19)/K),x],
+                               Pred.XgivenG_19[seq(2,nrow(Pred.XgivenG_19),by=nrow(Pred.XgivenG_19)/K),x],
+                               Pred.XgivenG_19[seq(3,nrow(Pred.XgivenG_19),by=nrow(Pred.XgivenG_19)/K),x],
+                               Pred.XgivenG_19[seq(4,nrow(Pred.XgivenG_19),by=nrow(Pred.XgivenG_19)/K),x],
+                               Pred.XgivenG_20[seq(1,nrow(Pred.XgivenG_20),by=nrow(Pred.XgivenG_20)/K),x],
+                               Pred.XgivenG_20[seq(2,nrow(Pred.XgivenG_20),by=nrow(Pred.XgivenG_20)/K),x],
+                               Pred.XgivenG_20[seq(3,nrow(Pred.XgivenG_20),by=nrow(Pred.XgivenG_20)/K),x],
+                               Pred.XgivenG_20[seq(4,nrow(Pred.XgivenG_20),by=nrow(Pred.XgivenG_20)/K),x],
+                               Pred.XgivenG_21[seq(1,nrow(Pred.XgivenG_21),by=nrow(Pred.XgivenG_21)/K),x],
+                               Pred.XgivenG_21[seq(2,nrow(Pred.XgivenG_21),by=nrow(Pred.XgivenG_21)/K),x],
+                               Pred.XgivenG_21[seq(3,nrow(Pred.XgivenG_21),by=nrow(Pred.XgivenG_21)/K),x],
+                               Pred.XgivenG_21[seq(4,nrow(Pred.XgivenG_21),by=nrow(Pred.XgivenG_21)/K),x],
+                               Pred.XgivenG_22[seq(1,nrow(Pred.XgivenG_22),by=nrow(Pred.XgivenG_22)/K),x],
+                               Pred.XgivenG_22[seq(2,nrow(Pred.XgivenG_22),by=nrow(Pred.XgivenG_22)/K),x],
+                               Pred.XgivenG_22[seq(3,nrow(Pred.XgivenG_22),by=nrow(Pred.XgivenG_22)/K),x]))
   })
 
 ### Summarize the results over MC draws 
